@@ -1,32 +1,8 @@
-# Full-Body Visual Self-Modeling of Robot Morphologies
-
-[Boyuan Chen](http://boyuanchen.com/),
-[Robert Kwiatkowskig](https://www.linkedin.com/in/robert-kwiatkowski-7a5266201),
-[Carl Vondrick](http://www.cs.columbia.edu/~vondrick/),
-[Hod Lipson](https://www.hodlipson.com/)
-<br>
-Columbia University
-<br>
-
-### [Project Website](https://robot-morphology.cs.columbia.edu/) | [Video](https://youtu.be/aoCAplokoWE) | [Paper](http://arxiv.org/abs/2111.06389)
+# Visual Self-Modeling for articulate objects in PartNet Mobility Dataset
 
 ## Overview
 This repo contains the PyTorch implementation for paper "Full-Body Visual Self-Modeling of Robot Morphologies".
 
-![teaser](figures/teaser.gif)
-
-## Citation
-
-If you find our paper or codebase helpful, please consider citing:
-
-```
-@article{chen2021morphology,
-  title={Full-Body Visual Self-Modeling of Robot Morphologies},
-  author={Chen, Boyuan and Kwiatkowskig, Robert and Vondrick, Carl and Lipson, Hod},
-  journal={arXiv preprint arXiv:2111.06389},
-  year={2021}
-}
-```
 
 ## Content
 
@@ -38,20 +14,10 @@ If you find our paper or codebase helpful, please consider citing:
 
 ## Installation
 
-Our code has been tested on Ubuntu 18.04 with CUDA 11.0. Create a python3.6 virtual environment and install the dependencies.
+This code has been tested on Windows11 with CUDA 13.0. Create a python3.12 virtual environment and install the dependencies.
 
 ```
-virtualenv -p /usr/bin/python3.6 env-visual-selfmodeling
-source env-visual-selfmodeling/bin/activate
-cd visual-selfmodeling
-pip install -r requirements.txt
-```
-
-You may also need to run the following two lines to specify the correct cuda path for pycuda and nvcc.
-
-```
-export PATH=/usr/local/cuda-11.0/bin:$PATH
-export PATH=/usr/local/cuda-11.0/bin:${PATH:+${PATH}}
+pip3 install torch torchvision --index-url https://download.pytorch.org/whl/cu130
 ```
 
 To run the evaluation metrics, please install the additional package with the following line.
