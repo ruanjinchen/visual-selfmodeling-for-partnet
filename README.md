@@ -14,25 +14,30 @@ This repo contains the PyTorch implementation for paper "Full-Body Visual Self-M
 
 ## Installation
 
-This code has been tested on Windows11 with CUDA 13.0. Create a python3.12 virtual environment and install the dependencies.
+This code has been tested on Windows11 with CUDA 13.0 and Ubuntu 22.04 with CUDA 12.4.  
+Create a python3.12 virtual environment and install the dependencies. I recommend using PyTorch's official installation instructions.
 
 ```
 pip3 install torch torchvision --index-url https://download.pytorch.org/whl/cu130
-```
-
-To run the evaluation metrics, please install the additional package with the following line.
-
-```
-python setup.py build_ext --inplace
+pip install -r requirements.txt
 ```
 
 ## Data Preparation
 
-Run the following commands to generate the simulated data in Pybullet.
+Run the following commands to generate the simulated data in Pybullet. Needs PartNet Datasets!
 
 ```
-cd visual-selfmodeling
-python sim.py
+python make_partnet_dataset_for_vsm.py `
+  --index partnet_index.csv `
+  --dataset-dir D:/Dataset/PartNet/dataset `
+  --anno-id 2612 `
+  --out-dir ./VSM/eyeglasses_2612 `
+  --num 1200 `
+  --mesh-format obj `
+  --normalize unit_sphere `
+  --emit-xyzn `
+  --xyzn-points 120000 `
+  --scale-prismatic-to-pi
 ```
 
 This will generate the mesh files in a folder named `saved_meshes` under current directory. A `robot_state.json` file will also be generated in `saved_meshes` folder to store the corresponding joint angles.
