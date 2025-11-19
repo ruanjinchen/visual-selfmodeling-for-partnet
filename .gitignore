@@ -6,3 +6,5 @@ __pycache__
 */logs_*
 build
 *.zip
+data/
+*_siren-sdf_1
