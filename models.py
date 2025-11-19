@@ -49,8 +49,15 @@ class VisModelingModel(pl.LightningModule):
                  lr_schedule: list=[100000]) -> None:
         super().__init__()
         self.save_hyperparameters()
-        self.kwargs = {'num_workers': self.hparams.num_workers, 'pin_memory': True} if self.hparams.if_cuda else {}
-
+        # self.kwargs = {'num_workers': self.hparams.num_workers, 'pin_memory': True} if self.hparams.if_cuda else {}
+        self.kwargs = {}
+        if self.hparams.if_cuda:
+            self.kwargs.update({
+                'num_workers': self.hparams.num_workers,
+                'pin_memory': True,
+                'persistent_workers': self.hparams.num_workers > 0,
+                'prefetch_factor': 16
+            })
         self.__build_model()
 
     def __build_model(self):
@@ -185,13 +192,17 @@ class VisModelingModel(pl.LightningModule):
                     self.train_dataset = MultipleModel(flag='train',
                                                        seed=self.hparams.seed,
                                                        pointcloud_folder=self.hparams.data_filepath,
-                                                       on_surface_points=self.hparams.train_batch)
+                                                       on_surface_points=self.hparams.train_batch,
+                                                       dof=self.hparams.dof, 
+                                                       cache_to=getattr(self.hparams, 'cache_to', 'none'))
             if stage == 'test':
                 if self.hparams.loss_type == 'siren_sdf':
                     self.test_dataset = MultipleModel(flag='test',
                                                       seed=self.hparams.seed,
                                                       pointcloud_folder=self.hparams.data_filepath,
-                                                      on_surface_points=self.hparams.test_batch)
+                                                      on_surface_points=self.hparams.test_batch, 
+                                                      dof=self.hparams.dof, 
+                                                      cache_to=getattr(self.hparams, 'cache_to', 'none'))
         
         if self.hparams.model_name == 'state-condition-kinematic' or self.hparams.model_name == 'state-condition-kinematic-scratch':
             if stage == 'fit':
@@ -206,7 +217,7 @@ class VisModelingModel(pl.LightningModule):
             if stage == 'test':
                 self.test_dataset = MultipleModelLink(flag='test',
                                                       seed=self.hparams.seed,
-                                                      pointcloud_folder=self.hparams.data_filepath)
+                                                      pointcloud_folder=self.hparams.data_filepath,)
 
 
     def train_dataloader(self):

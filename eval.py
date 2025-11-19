@@ -16,9 +16,21 @@ from utils import common
 from munch import munchify
 from collections import OrderedDict
 from models import VisModelingModel
-from pytorch_lightning.plugins import DDPPlugin
-from pytorch_lightning import Trainer, seed_everything
-from pytorch_lightning.loggers import TensorBoardLogger
+# ---- Lightning 2.x 首选导入；若不兼容则退回到旧别名 ----
+try:
+    from lightning.pytorch import Trainer, seed_everything
+    from lightning.pytorch.callbacks import ModelCheckpoint
+    from lightning.pytorch.loggers import TensorBoardLogger
+    from lightning.pytorch.strategies import DDPStrategy
+except Exception:
+    # 兼容层（某些环境仍通过 pytorch_lightning 暴露）
+    from pytorch_lightning import Trainer, seed_everything
+    from pytorch_lightning.callbacks import ModelCheckpoint
+    from pytorch_lightning.loggers import TensorBoardLogger
+    try:
+        from pytorch_lightning.strategies import DDPStrategy
+    except Exception:
+        DDPStrategy = None  # 单卡时不需要
 
 def load_config(filepath):
     with open(filepath, 'r') as stream:
@@ -72,7 +84,7 @@ def create_state_condition_mesh():
     model.freeze()
     
     # get test file ids
-    with open(os.path.join('../assets', 'datainfo', f'multiple_models_data_split_dict_{cfg.seed}.json'), 'r') as file:
+    with open(os.path.join('assets', 'datainfo', f'multiple_models_data_split_dict_{cfg.seed}.json'), 'r') as file:
         seq_dict = json.load(file)
     id_lst = seq_dict['test']
 
@@ -85,10 +97,8 @@ def create_state_condition_mesh():
     common.mkdir(ply_save_folder)
     for idx in tqdm(id_lst):
         # get testing robot states
-        sel_robot_state = np.array((robot_state_dict[str(idx)][0][0],
-                                    robot_state_dict[str(idx)][1][0],
-                                    robot_state_dict[str(idx)][2][0],
-                                    robot_state_dict[str(idx)][3][0])).reshape(1, -1)
+        sel_robot_state = np.array([robot_state_dict[str(idx)][k][0] for k in range(cfg.dof)], 
+                                   dtype=np.float32).reshape(1, -1)
         sel_robot_state = sel_robot_state / np.pi
 
         N=256
@@ -145,8 +155,24 @@ def create_state_condition_mesh():
 # render predictions as angle smooth movements as animation
 def create_state_condition_mesh_render():
     config_filepath = str(sys.argv[1])
-    checkpoint_filepath = str(sys.argv[2])
-    checkpoint_filepath = glob.glob(os.path.join(checkpoint_filepath, '*.ckpt'))[0]
+    # checkpoint_filepath = str(sys.argv[2])
+    # checkpoint_filepath = glob.glob(os.path.join(checkpoint_filepath, '*.ckpt'))[0]
+    # 原来：
+    # checkpoint_filepath = str(sys.argv[2])
+    # checkpoint_filepath = glob.glob(os.path.join(checkpoint_filepath, '*.ckpt'))[0]
+
+    # 建议：
+    ckpt_dir = str(sys.argv[2])
+    cands = glob.glob(os.path.join(ckpt_dir, 'last.ckpt'))
+    if not cands:
+        cands = sorted(glob.glob(os.path.join(ckpt_dir, 'epoch=*.ckpt')))
+    checkpoint_filepath = cands[-1]
+    print('Using checkpoint:', checkpoint_filepath)
+    print('Using checkpoint:', checkpoint_filepath)
+    print('Using checkpoint:', checkpoint_filepath)
+    print('Using checkpoint:', checkpoint_filepath)
+    print('Using checkpoint:', checkpoint_filepath)
+
     cfg = load_config(filepath=config_filepath)
     pprint.pprint(cfg)
     cfg = munchify(cfg)
@@ -197,10 +223,11 @@ def create_state_condition_mesh_render():
         temp_robot_state_seqs = []
         num_keys = len(list(robot_state_dict.keys()))
         for i in range(num_keys):
-            state_vector = [robot_state_dict[str(i)][0][0],
-                            robot_state_dict[str(i)][1][0],
-                            robot_state_dict[str(i)][2][0],
-                            robot_state_dict[str(i)][3][0]]
+            # state_vector = [robot_state_dict[str(i)][0][0],
+            #                 robot_state_dict[str(i)][1][0],
+            #                 robot_state_dict[str(i)][2][0],
+            #                 robot_state_dict[str(i)][3][0]]
+            state_vector = [robot_state_dict[str(i)][k][0] for k in range(cfg.dof)]
             temp_robot_state_seqs.append(state_vector)
         robot_state_seqs[seq_index] = temp_robot_state_seqs
 
@@ -265,9 +292,9 @@ def create_state_condition_mesh_render():
 
             # denormalize
             pred_mesh = trimesh.load(ply_filename)
-            pred_mesh.vertices[:, 0] = pred_mesh.vertices[:, 0] * 0.45
-            pred_mesh.vertices[:, 1] = pred_mesh.vertices[:, 1] * 0.45
-            pred_mesh.vertices[:, 2] = ((pred_mesh.vertices[:, 2] * 0.5) + 0.5) * (0.51 + 0.13)
+            # pred_mesh.vertices[:, 0] = pred_mesh.vertices[:, 0] * 0.45
+            # pred_mesh.vertices[:, 1] = pred_mesh.vertices[:, 1] * 0.45
+            # pred_mesh.vertices[:, 2] = ((pred_mesh.vertices[:, 2] * 0.5) + 0.5) * (0.51 + 0.13)
 
             if force_connectivity:
                 # remove disconnected components from the predicted mesh
@@ -393,3 +420,9 @@ if __name__ == '__main__':
         evaluate_kinematic()
     if sys.argv[3] == 'eval-kinematic-scratch':
         evaluate_kinematic_scratch()
+
+'''
+
+python eval.py ./configs/state_condition/config1.yaml ./pliers_state-condition_new-global-siren-sdf_1/lightning_logs/version_2/checkpoints/ eval-state-condition
+
+'''
