@@ -19,7 +19,22 @@ from model_utils import (
     KinematicFeatToLinkModel,
     KinematicScratchModel
 )
+'''
+ if self.hparams.model_name == 'state-condition':
+     if stage == 'fit':
+         if self.hparams.loss_type == 'siren_sdf':
+             self.train_dataset = MultipleModel(flag='train',
+                                                seed=self.hparams.seed,
+                                                pointcloud_folder=self.hparams.data_filepath,
+-                                               on_surface_points=self.hparams.train_batch)
++                                               on_surface_points=self.hparams.train_batch,
++                                               dof=self.hparams.dof)
+     if stage == 'test':
+         ...
+-        self.test_dataset = MultipleModel(... on_surface_points=self.hparams.test_batch)
++        self.test_dataset = MultipleModel(... on_surface_points=self.hparams.test_batch, dof=self.hparams.dof)
 
+'''
 def rename_ckpt_for_multi_models(ckpt):
     renamed_state_dict = OrderedDict()
     for k, v in ckpt['state_dict'].items():

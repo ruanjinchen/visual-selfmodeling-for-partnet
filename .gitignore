@@ -1,10 +1,4 @@
-*.*~
-*~
-saved_meshes*
-__pycache__
-.DS_Store
-*/logs_*
-build
-*.zip
-data/
-*_siren-sdf_1
+dataset_tdcr
+sim_*
+eval_out
+*.pyc

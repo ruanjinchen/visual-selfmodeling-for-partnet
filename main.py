@@ -4,6 +4,7 @@ import sys
 import yaml
 import torch
 import pprint
+import inspect
 from munch import munchify
 from models import VisModelingModel
 
@@ -24,6 +25,26 @@ except Exception:
         DDPStrategy = None  # 单卡时不需要
 
 precision = "32-true"
+precision = "32-true"
+
+def _progress_bar_kwargs():
+    """
+    只有在交互式终端(TTY)才开进度条。
+    当输出被 pipe/重定向（例如 | tee）时自动关闭，避免 log 被 tqdm 刷爆。
+    """
+    enable_pb = sys.stdout.isatty() and sys.stderr.isatty()
+
+    sig = inspect.signature(Trainer)
+    if "enable_progress_bar" in sig.parameters:
+        return {"enable_progress_bar": enable_pb}
+
+    # 兼容老版本 pytorch_lightning：refresh_rate=0 等价于关闭
+    if "progress_bar_refresh_rate" in sig.parameters:
+        return {"progress_bar_refresh_rate": 1 if enable_pb else 0}
+
+    return {}
+
+
 def load_config(filepath):
     with open(filepath, 'r') as stream:
         try:
@@ -74,7 +95,8 @@ def main():
                       deterministic=True,
                       strategy=DDPStrategy(find_unused_parameters=False),
                       precision=precision,
-                      default_root_dir=log_dir)
+                      default_root_dir=log_dir,
+                      **_progress_bar_kwargs())
 
     trainer.fit(model)
 
@@ -124,7 +146,8 @@ def main_kinematic():
                       precision=precision,
                       default_root_dir=log_dir,
                       val_check_interval=1.0,
-                      checkpoint_callback=checkpoint_callback)
+                      checkpoint_callback=checkpoint_callback,
+                      **_progress_bar_kwargs())
 
     model.extract_kinematic_encoder_model(sys.argv[3])
     trainer.fit(model)
@@ -175,7 +198,8 @@ def main_kinematic_scratch():
                       precision=precision,
                       default_root_dir=log_dir,
                       val_check_interval=1.0,
-                      checkpoint_callback=checkpoint_callback)
+                      checkpoint_callback=checkpoint_callback,
+                      **_progress_bar_kwargs())
                       
     trainer.fit(model)
 
@@ -188,19 +212,6 @@ if __name__ == '__main__':
     else:
         main()
 '''
-眼镜
-python main.py configs/state_condition/config1.yaml NA
-
-钳子
-python main.py configs/state_condition/config2.yaml NA
-
-剪刀
-python main.py configs/state_condition/config3.yaml NA
-
-狗
-python main.py configs/state_condition/config4.yaml NA
-
-机械臂
-python main.py configs/state_condition/config5.yaml NA
+{ /usr/bin/time -v python main.py configs/state_condition/sim_5m_with_base.yaml NA; } 2>&1 | tee train.log
 
 '''

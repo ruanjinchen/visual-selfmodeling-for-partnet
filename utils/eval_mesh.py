@@ -395,3 +395,7 @@ if __name__ == '__main__':
         eval_mesh_nearest_neighbor_main()
     if algorithm == 'random':
         eval_mesh_random_main()
+
+'''
+python eval_mesh.py ../configs/state_condition/config1.yaml model
+'''
