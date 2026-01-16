@@ -642,4 +642,20 @@ python eval_export_test_pcd.py \
   --device cuda \
   --res 128 \
   --iso 0.0
+
+python eval_export_test_pcd.py \
+  --config configs/state_condition/real_2m_with_base.yaml \
+  --ckpt real_2m_with_base_state-condition_new-global-siren-sdf_43/lightning_logs/version_0/checkpoints/epoch=499-step=141000.ckpt \
+  --out-dir eval_out/real_2m_with_base \
+  --device cuda \
+  --res 128 \
+  --iso 0.0
+
+python eval_export_test_pcd.py \
+  --config configs/state_condition/real_3m_with_base.yaml \
+  --ckpt real_3m_with_base_state-condition_new-global-siren-sdf_43/lightning_logs/version_0/checkpoints/epoch=499-step=141000.ckpt \
+  --out-dir eval_out/real_3m_with_base \
+  --device cuda \
+  --res 128 \
+  --iso 0.0
 '''

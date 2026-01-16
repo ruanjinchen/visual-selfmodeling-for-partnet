@@ -212,6 +212,9 @@ if __name__ == '__main__':
     else:
         main()
 '''
-{ /usr/bin/time -v python main.py configs/state_condition/sim_5m_with_base.yaml NA; } 2>&1 | tee train.log
+{ /usr/bin/time -v python main.py configs/state_condition/real_2m_with_base.yaml NA; } 2>&1 | tee train.log
+
+{ /usr/bin/time -v python main.py configs/state_condition/real_3m_with_base.yaml NA; } 2>&1 | tee train.log
+
 
 '''
